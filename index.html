@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SiteDay: daily site reports in three minutes</title>
+<meta name="description" content="SiteDay is construction site progress reporting for contractors and supervision consultants. Site engineers file a 3-minute daily report on Android or iOS, even offline; PMs approve; clients follow along; daily and monthly FIDIC reports compile themselves.">
+<meta name="theme-color" content="#0A0D1C">
+<link rel="canonical" href="https://siteday.suhi.app/">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SiteDay">
+<meta property="og:url" content="https://siteday.suhi.app/">
+<meta property="og:title" content="SiteDay: daily site reports in three minutes">
+<meta property="og:description" content="Site engineers report from the phone, even offline. PMs approve, clients follow along, and daily and monthly FIDIC reports compile themselves.">
+<meta property="og:image" content="https://siteday.suhi.app/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SiteDay: the daily site report, done in three minutes.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SiteDay: daily site reports in three minutes">
+<meta name="twitter:description" content="Construction site progress reporting for contractors and supervision consultants.">
+<meta name="twitter:image" content="https://siteday.suhi.app/assets/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
+<style>
+  :root {
+    --bg: #0A0D1C; --bg2: #0F1328; --surface: rgba(255,255,255,.045); --surface2: rgba(255,255,255,.075);
+    --line: rgba(255,255,255,.11); --fg: #F4F5FF; --muted: rgba(244,245,255,.68); --dim: rgba(244,245,255,.5);
+    --pri: #2A55C4; --pri-l: #B4C5FF; --pri-c: #DCE3FF;
+    --mint: #8ED9C3; --hivis: #F2C048; --orange: #FFB690; --pink: #F2A6D8;
+    --nav-h: 64px;
+    --pad: max(20px, env(safe-area-inset-left)); --pad-r: max(20px, env(safe-area-inset-right));
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 16px); -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.6 "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--pri-l); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--pri-l); outline-offset: 3px; border-radius: 8px; }
+  h1, h2, h3 { margin: 0; line-height: 1.12; letter-spacing: -.02em; font-weight: 700; }
+  p { margin: 0; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+  .wrap { width: 100%; max-width: 1160px; margin: 0 auto; padding-left: var(--pad); padding-right: var(--pad-r); }
+  .skip { position: absolute; left: -9999px; top: 8px; background: var(--fg); color: var(--bg); padding: 8px 12px; border-radius: 8px; z-index: 100; }
+  .skip:focus { left: 12px; }
+
+  /* nav */
+  header.nav { position: sticky; top: 0; z-index: 50; padding-top: env(safe-area-inset-top); background: rgba(10,13,28,.82); -webkit-backdrop-filter: saturate(140%) blur(14px); backdrop-filter: saturate(140%) blur(14px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+  header.nav.scrolled { border-bottom-color: var(--line); }
+  .nav .wrap { height: var(--nav-h); display: flex; align-items: center; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--fg); text-decoration: none; font-weight: 700; font-size: 19px; letter-spacing: -.01em; flex-shrink: 0; }
+  .brand img { width: 32px; height: 32px; border-radius: 9px; }
+  .nav nav { display: flex; gap: 4px; margin-left: auto; }
+  .nav nav a { color: var(--muted); text-decoration: none; font-size: 15px; font-weight: 500; padding: 8px 12px; border-radius: 10px; }
+  .nav nav a:hover { color: var(--fg); background: var(--surface); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; font-family: inherit; font-weight: 600; font-size: 16px; line-height: 1.1; text-decoration: none; white-space: nowrap; transition: transform .15s, background .15s, border-color .15s; }
+  .btn:active { transform: scale(.98); }
+  .btn-pri { background: var(--pri); color: #fff; box-shadow: 0 8px 28px rgba(42,85,196,.4); }
+  .btn-pri:hover { background: #3462D6; }
+  .btn-ghost { color: var(--fg); border: 1px solid rgba(255,255,255,.22); }
+  .btn-ghost:hover { background: var(--surface); border-color: rgba(255,255,255,.35); }
+  .nav .btn { min-height: 40px; padding: 0 16px; font-size: 15px; margin-left: 8px; }
+  @media (max-width: 860px) { .nav nav { display: none; } .nav .btn { margin-left: auto; } }
+  @media (max-width: 359px) { .nav .btn { padding: 0 12px; font-size: 14px; } .brand { font-size: 17px; } .brand img { width: 28px; height: 28px; } }
+
+  /* hero */
+  .hero { position: relative; padding: clamp(40px, 8vw, 96px) 0 clamp(56px, 8vw, 104px); overflow: hidden; }
+  .hero::before { content: ""; position: absolute; inset: -20% -10% auto; height: 120%; pointer-events: none;
+    background: radial-gradient(40% 50% at 78% 40%, rgba(42,85,196,.38), transparent 70%), radial-gradient(30% 40% at 15% 10%, rgba(142,217,195,.12), transparent 70%); }
+  .hero .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 48px; align-items: center; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--pri-l); background: rgba(180,197,255,.09); border: 1px solid rgba(180,197,255,.2); padding: 6px 12px; border-radius: 999px; }
+  .eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--hivis); flex-shrink: 0; }
+  .hero h1 { font-size: clamp(38px, 6.2vw, 68px); margin: 20px 0 20px; letter-spacing: -.035em; }
+  .hero h1 em { font-style: normal; color: var(--hivis); }
+  .lede { font-size: clamp(17px, 1.6vw, 20px); color: var(--muted); max-width: 34em; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; padding: 0; list-style: none; }
+  .chips li { font-size: 14px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; background: var(--surface); }
+  .hero-phones { position: relative; display: flex; justify-content: center; align-items: flex-start; padding-bottom: 8%; }
+  .hero-phones .phone { width: min(290px, 44%); }
+  .hero-phones .phone.back { margin-left: -12%; transform: translateY(9%) rotate(5deg); z-index: 0; }
+  .hero-phones .phone.front { transform: rotate(-3deg); z-index: 1; }
+
+  .phone { position: relative; border-radius: 34px; padding: 7px; background: linear-gradient(160deg, #2A2F49, #12152A); box-shadow: 0 30px 70px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.12); }
+  .phone img { border-radius: 28px; width: 100%; aspect-ratio: 1206 / 2622; object-fit: cover; background: #F8F9FF; }
+
+  /* sections */
+  section { position: relative; }
+  .sec { padding: clamp(64px, 9vw, 112px) 0; border-top: 1px solid var(--line); }
+  .kicker { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--mint); margin-bottom: 14px; }
+  .sec h2 { font-size: clamp(30px, 4.2vw, 46px); max-width: 20em; }
+  .sec .intro { color: var(--muted); font-size: clamp(17px, 1.5vw, 19px); margin-top: 16px; max-width: 40em; }
+
+  .cards { display: grid; gap: 16px; margin-top: 40px; }
+  .cards.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+  .card h3 { font-size: 19px; margin-bottom: 8px; letter-spacing: -.01em; }
+  .card p { color: var(--muted); font-size: 16px; }
+  .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 16px; background: rgba(180,197,255,.12); color: var(--pri-l); }
+  .ico svg { width: 24px; height: 24px; }
+  .ico.o { background: rgba(255,182,144,.12); color: var(--orange); }
+  .ico.m { background: rgba(142,217,195,.12); color: var(--mint); }
+  .ico.y { background: rgba(242,192,72,.12); color: var(--hivis); }
+
+  /* steps */
+  .steps { list-style: none; padding: 0; margin: 48px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; counter-reset: s; }
+  .steps li { display: flex; flex-direction: column; gap: 14px; }
+  .steps .phone { width: 100%; max-width: 240px; border-radius: 28px; padding: 6px; }
+  .steps .phone img { border-radius: 23px; }
+  .step-n { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--pri-l); }
+  .step-n b { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--pri); color: #fff; font-size: 14px; }
+  .steps h3 { font-size: 20px; }
+  .steps p { color: var(--muted); font-size: 16px; }
+
+  /* features */
+  .feat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+  .feat .card { padding: 22px; }
+
+  /* split rows */
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; margin-top: 56px; }
+  .split + .split { margin-top: 88px; }
+  .split.rev .split-media { order: 2; }
+  .split h3 { font-size: clamp(24px, 2.8vw, 32px); margin-bottom: 14px; }
+  .split p { color: var(--muted); }
+  .split ul { margin: 18px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .split li { position: relative; padding-left: 28px; color: var(--fg); font-size: 16px; }
+  .split li::before { content: ""; position: absolute; left: 2px; top: .45em; width: 14px; height: 8px; border-left: 2.5px solid var(--mint); border-bottom: 2.5px solid var(--mint); transform: rotate(-45deg); }
+  .split-media { display: flex; justify-content: center; align-items: flex-start; gap: 16px; }
+  .split-media .phone { width: min(250px, 48%); }
+  .split-media .phone:nth-child(2) { margin-top: 40px; }
+  .langs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  .langs span { border: 1px solid var(--line); background: var(--surface); padding: 6px 14px; border-radius: 999px; font-size: 15px; }
+  .toc { margin-top: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); padding: 6px 18px; }
+  .toc div { display: flex; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .toc div:last-child { border-bottom: 0; }
+  .toc .mono { color: var(--hivis); min-width: 1.4em; }
+
+  /* who */
+  .who { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+  .who .card ul { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 16px; }
+  .who .card li + li { margin-top: 4px; }
+  .where { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px 24px; color: var(--muted); font-size: 16px; }
+  .where b { color: var(--fg); font-weight: 600; }
+
+  /* final */
+  .final { text-align: center; }
+  .final .box { position: relative; overflow: hidden; border-radius: 28px; padding: clamp(40px, 7vw, 72px) clamp(20px, 5vw, 64px); background: linear-gradient(150deg, #1B3A8C, #142A66 55%, #10183D); border: 1px solid rgba(180,197,255,.22); }
+  .final .box::after { content: ""; position: absolute; right: -80px; bottom: -120px; width: 320px; height: 320px; border-radius: 50%; background: rgba(255,255,255,.06); pointer-events: none; }
+  .final img.icon { width: 72px; height: 72px; border-radius: 18px; margin: 0 auto 22px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+  .final h2 { margin: 0 auto; }
+  .final p { color: rgba(244,245,255,.8); margin: 16px auto 0; max-width: 34em; }
+  .final .cta-row { justify-content: center; position: relative; z-index: 1; }
+  .final .btn-pri { background: #fff; color: #142A66; box-shadow: none; }
+  .final .btn-pri:hover { background: var(--pri-c); }
+  .final .mail { margin-top: 20px; font-size: 15px; color: rgba(244,245,255,.7); position: relative; z-index: 1; }
+  .final .mail a { color: #fff; }
+
+  footer { border-top: 1px solid var(--line); padding: 32px 0 calc(32px + env(safe-area-inset-bottom)); color: var(--dim); font-size: 15px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+  footer a { color: var(--muted); }
+  .suhi { color: var(--fg); text-decoration: none; font-weight: 600; }
+  .suhi i { font-style: normal; font-weight: 700; color: var(--mint); }
+
+  /* reveal (opacity/transform only) */
+  .js .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1); }
+  .js .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .js .reveal { opacity: 1; transform: none; transition: none; } }
+
+  /* responsive */
+  @media (max-width: 960px) {
+    .hero .wrap { grid-template-columns: 1fr; gap: 40px; }
+    .hero-phones { max-width: 480px; margin: 0 auto; width: 100%; }
+    .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 20px; }
+    .feat { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cards.three, .who { grid-template-columns: 1fr; }
+    .split, .split.rev { grid-template-columns: 1fr; gap: 36px; }
+    .split.rev .split-media { order: 0; }
+    .split-media { max-width: 480px; margin: 0 auto; width: 100%; }
+  }
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    .feat { grid-template-columns: 1fr; }
+    .cta-row .btn { flex: 1 1 100%; }
+    .steps { grid-template-columns: 1fr; gap: 40px; }
+    .steps li { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 4px 16px; align-items: start; }
+    .steps .phone { grid-row: 1 / span 3; border-radius: 18px; padding: 4px; }
+    .steps .phone img { border-radius: 14px; }
+    .steps h3 { font-size: 18px; }
+    .steps p { font-size: 15px; }
+    .card { padding: 20px; }
+    .split-media .phone { width: 48%; }
+    .phone { border-radius: 26px; padding: 5px; }
+    .phone img { border-radius: 21px; }
+  }
+  @media (max-width: 359px) {
+    .steps li { grid-template-columns: 88px minmax(0, 1fr); gap: 4px 12px; }
+  }
+  /* phones in landscape: keep hero compact */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .hero .wrap { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 24px; }
+    .hero h1 { font-size: clamp(30px, 4.6vw, 44px); }
+    .hero-phones .phone { width: 46%; }
+    .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .steps li { display: flex; }
+    .split, .split.rev { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .split.rev .split-media { order: 2; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="SiteDay home"><img src="assets/favicon.svg" alt="" width="32" height="32">SiteDay</a>
+    <nav aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#field">In the field</a>
+      <a href="#who">Who it's for</a>
+    </nav>
+    <a class="btn btn-pri" href="#contact">Early access</a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow"><span class="dot" aria-hidden="true"></span>Construction site reporting · early access</span>
+        <h1 id="hero-title">The daily site report, done in <em>three minutes.</em></h1>
+        <p class="lede">SiteDay lets site engineers file the daily report from their phone, even with no signal. Project managers approve it, clients follow along, and every day rolls up into branded daily and monthly FIDIC reports.</p>
+        <div class="cta-row">
+          <a class="btn btn-pri" href="mailto:suhi.apps@gmail.com?subject=SiteDay%20early%20access">Request early access</a>
+          <a class="btn btn-ghost" href="mailto:suhi.apps@gmail.com?subject=SiteDay%20demo">Book a demo</a>
+        </div>
+        <ul class="chips" aria-label="Highlights">
+          <li>Android and iOS</li>
+          <li>Works offline</li>
+          <li>English · Русский · O'zbekcha</li>
+        </ul>
+      </div>
+      <div class="hero-phones" aria-hidden="true">
+        <div class="phone front"><img src="assets/shots/project.jpg" alt="" width="570" height="1240" fetchpriority="high"></div>
+        <div class="phone back"><img src="assets/shots/report-review.jpg" alt="" width="570" height="1240"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="problem" aria-labelledby="problem-title">
+    <div class="wrap">
+      <p class="kicker reveal">The problem</p>
+      <h2 id="problem-title" class="reveal">Site diaries shouldn't live in chat threads and spreadsheets.</h2>
+      <p class="intro reveal">On most projects the day's record is a paper diary, a WhatsApp photo dump and an Excel sheet someone fills in at night. By month end, the progress report means days of chasing.</p>
+      <div class="cards three">
+        <div class="card reveal">
+          <div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Reports come in late</h3>
+          <p>Engineers are on site all day, often without signal. Writing it up later means numbers get guessed and days get skipped.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="m21 16-5-5-8 8"/></svg></div>
+          <h3>Evidence is scattered</h3>
+          <p>Photos without dates or locations, labour counts in one place, quantities in another. Hard to trust, harder to find.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
+          <h3>Monthly reports eat days</h3>
+          <p>Compiling the FIDIC monthly progress report by hand means copying a month of diaries into Word, then checking it all again.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <p class="kicker reveal">How it works</p>
+      <h2 id="how-title" class="reveal">From the site to the client, in one flow.</h2>
+      <p class="intro reveal">Everyone works from the same record. Nothing is retyped.</p>
+      <ol class="steps">
+        <li class="reveal">
+          <div class="phone"><img src="assets/shots/report-review.jpg" alt="Daily report review screen listing weather, labour, equipment, materials and work done" width="570" height="1240" loading="lazy"></div>
+          <span class="step-n"><b>1</b>Site engineer</span>
+          <h3>Files the day's report</h3>
+          <p>Weather, labour, equipment, materials, work done, photos and issues, in a few taps. Copy yesterday's and change only what moved.</p>
+        </li>
+        <li class="reveal">
+          <div class="phone"><img src="assets/shots/pm-approved.jpg" alt="Approved and locked daily report on the project manager's phone" width="570" height="1240" loading="lazy"></div>
+          <span class="step-n"><b>2</b>Project manager</span>
+          <h3>Approves or sends back</h3>
+          <p>Review on phone or web, approve or send back with a comment. Approved reports lock; later changes become timestamped addenda.</p>
+        </li>
+        <li class="reveal">
+          <div class="phone"><img src="assets/shots/admin-links.jpg" alt="Share links screen with read-only links for consultants and lenders" width="570" height="1240" loading="lazy"></div>
+          <span class="step-n"><b>3</b>Client and consultant</span>
+          <h3>Follow along, read-only</h3>
+          <p>A dashboard or an expiring share link for the resident engineer, client or lender. No login needed, and they can acknowledge reports.</p>
+        </li>
+        <li class="reveal">
+          <div class="phone"><img src="assets/shots/preview.jpg" alt="Daily progress report PDF preview with share to WhatsApp, Telegram or email" width="570" height="1240" loading="lazy"></div>
+          <span class="step-n"><b>4</b>Reports</span>
+          <h3>PDFs compile themselves</h3>
+          <p>Branded daily reports and the monthly FIDIC progress report, ready to send by WhatsApp, Telegram or email.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <p class="kicker reveal">Features</p>
+      <h2 id="features-title" class="reveal">Everything the site record needs, nothing it doesn't.</h2>
+      <div class="feat">
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <h3>Copy yesterday</h3>
+          <p>Start from the last report. Changed fields are highlighted so the PM sees exactly what moved.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2l2-3h6l2 3h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+          <h3>Photos with GPS and time</h3>
+          <p>Camera-first capture, stamped with location and time, tagged to the activity and chainage.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+          <h3>Forms builder</h3>
+          <p>Build your own checklists (concrete pours, inspections, snags) with photos, signatures and GPS. Publish to projects and roles; they work offline.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></div>
+          <h3>Issue board</h3>
+          <p>Raise issues and NCRs with priority, owner and due date. Track them from open to closed with before and after photos.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></div>
+          <h3>Dashboards</h3>
+          <p>Planned against actual progress, labour and equipment trends, delays, and an automatic dashboard for every form, with Excel export.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+          <h3>Locations and chainage</h3>
+          <p>Blocks and floors, zones, or road and pipeline sections with chainage like <span class="mono">Km 12+400</span>. Fits buildings and linear projects alike.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="M12 9v6M9 12h6"/></svg></div>
+          <h3>Safety log</h3>
+          <p>Incidents, near misses and toolbox talks. An incident alerts the PM and client straight away.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+          <h3>A record you can trust</h3>
+          <p>Approved reports can't be edited. Every change is an addendum with a timestamp, and every form entry keeps its version.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></div>
+          <h3>Sign in with your phone</h3>
+          <p>Phone number and a one-time code. No passwords to forget, and teams are invited by phone number.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="field" aria-labelledby="field-title">
+    <div class="wrap">
+      <p class="kicker reveal">Built for the field</p>
+      <h2 id="field-title" class="reveal">Made for the site, not the office.</h2>
+      <p class="intro reveal">Designed for low-end phones, patchy networks, bright sunlight and gloved thumbs: big buttons, primary actions at the bottom, minimal typing.</p>
+
+      <div class="split">
+        <div class="split-media reveal" aria-hidden="true">
+          <div class="phone"><img src="assets/shots/saved-on-phone.jpg" alt="" width="570" height="1240" loading="lazy"></div>
+          <div class="phone"><img src="assets/shots/synced.jpg" alt="" width="570" height="1240" loading="lazy"></div>
+        </div>
+        <div class="reveal">
+          <h3>Offline first. Really.</h3>
+          <p>No signal at the quarry? Submit anyway. The report and photos are saved on the phone and send themselves when the network comes back.</p>
+          <ul>
+            <li>Reports, photos and forms stored on the phone</li>
+            <li>Clear status: saved on phone, waiting for network, synced</li>
+            <li>New forms download on the next sync and work offline</li>
+            <li>Apps for Android and iOS</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="split rev">
+        <div class="split-media reveal" aria-hidden="true">
+          <div class="phone"><img src="assets/shots/project-ru.jpg" alt="" width="570" height="1240" loading="lazy"></div>
+          <div class="phone"><img src="assets/shots/fill-top.jpg" alt="" width="570" height="1240" loading="lazy"></div>
+        </div>
+        <div class="reveal">
+          <h3>In the language of the site</h3>
+          <p>Each person picks their own language. Custom forms carry their labels in all three, and the monthly report can be produced in Russian.</p>
+          <div class="langs" aria-label="Languages"><span>English</span><span lang="ru">Русский</span><span lang="uz">O'zbekcha</span></div>
+          <ul>
+            <li>Phone codes for Kenya, Nigeria and Uzbekistan built in</li>
+            <li>Four colour themes and dark mode</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="split-media reveal" aria-hidden="true">
+          <div class="phone"><img src="assets/shots/reports-monthly.jpg" alt="" width="570" height="1240" loading="lazy"></div>
+          <div class="phone"><img src="assets/shots/issues.jpg" alt="" width="570" height="1240" loading="lazy"></div>
+        </div>
+        <div class="reveal">
+          <h3>Monthly FIDIC reports, compiled</h3>
+          <p>The month's approved diaries, form entries, issues and photos assemble into a progress report structured for FIDIC Sub-Clause 4.21, with your company's branding.</p>
+          <div class="toc">
+            <div><span class="mono">1</span>Progress summary and S-curve</div>
+            <div><span class="mono">2</span>Work done by activity</div>
+            <div><span class="mono">3</span>Personnel and equipment</div>
+            <div><span class="mono">4</span>Materials</div>
+            <div><span class="mono">5</span>HSE statistics</div>
+            <div><span class="mono">6</span>Issues, delays and mitigation</div>
+            <div><span class="mono">7</span>Photo record</div>
+            <div><span class="mono">8</span>Look-ahead</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="who" aria-labelledby="who-title">
+    <div class="wrap">
+      <p class="kicker reveal">Who it's for</p>
+      <h2 id="who-title" class="reveal">For everyone who needs to know what happened on site today.</h2>
+      <div class="who">
+        <div class="card reveal">
+          <div class="ico y"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M11.5 30C11.5 22.4 17 16.6 24 16.6S36.5 22.4 36.5 30Z"/><path fill="currentColor" d="M7 30.2H37.5C40.5 30.2 42.5 31.4 42.5 33.1C42.5 34.2 41.6 34.8 40.4 34.8H9.2A2.2 2.2 0 0 1 7 32.6Z"/></svg></div>
+          <h3>Contractors</h3>
+          <p>Site engineers report in minutes, PMs approve on the go, and the company owns a clean record of every project.</p>
+          <ul><li>Site engineers</li><li>Project managers</li><li>Company admins</li></ul>
+        </div>
+        <div class="card reveal">
+          <div class="ico m"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <h3>Supervision consultants</h3>
+          <p>Resident engineers see daily progress, photos and issues as they happen, and acknowledge reports instead of chasing them.</p>
+          <ul><li>Resident engineers</li><li>Consultant teams</li></ul>
+        </div>
+        <div class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V10l7-5 7 5v11M10 21v-6h4v6"/></svg></div>
+          <h3>Clients and lenders</h3>
+          <p>A read-only view through a share link that expires when you choose. No account, no training.</p>
+          <ul><li>Project owners</li><li>Road agencies and counties</li><li>Lender monitors</li></ul>
+        </div>
+      </div>
+      <div class="where reveal">
+        <span><b>Built for</b> Kenya, Nigeria and Uzbekistan</span>
+        <span><b>Works for</b> roads, buildings, pipelines and more</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec final" id="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <div class="box reveal">
+        <img class="icon" src="assets/icon-512.png" alt="" width="72" height="72" loading="lazy">
+        <h2 id="contact-title">SiteDay is coming soon.</h2>
+        <p>We're opening early access to a small number of contractors and consultants. Tell us about your projects and we'll show you SiteDay on them.</p>
+        <div class="cta-row">
+          <a class="btn btn-pri" href="mailto:suhi.apps@gmail.com?subject=SiteDay%20early%20access">Request early access</a>
+          <a class="btn btn-ghost" href="mailto:suhi.apps@gmail.com?subject=SiteDay%20demo">Book a demo</a>
+        </div>
+        <p class="mail">Or write to <a href="mailto:suhi.apps@gmail.com">suhi.apps@gmail.com</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="suhi" href="https://suhi.app">SiteDay · A <i>Suhi</i> app</a>
+    <span>© 2026 Suhi · <a href="mailto:suhi.apps@gmail.com">suhi.apps@gmail.com</a></span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var nav = document.querySelector('header.nav');
+    var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 8); };
+    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+</script>
+</body>
+</html>
